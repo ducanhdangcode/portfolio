@@ -4,7 +4,7 @@ import { ArrowLeft } from "@/components/icons";
 export default function NotFound() {
   return (
     <section className="intro">
-      <div className="hero-grid-bg" aria-hidden="true" />
+      <span className="deco-circle deco-circle-hero" aria-hidden="true" />
       <div className="container not-found">
         <p className="eyebrow">
           <span>404</span> / Not found

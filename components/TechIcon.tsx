@@ -25,7 +25,7 @@ type Glyph = { path: string; hex: string };
 type Custom = "csharp" | "postgis" | "agentic" | "orchestration";
 
 // Logo thương hiệu từ Simple Icons (CC0).
-// Java: Oracle đã gỡ logo Java khỏi bộ nên dùng logo OpenJDK, hover hiện màu cam của Java.
+// Java: Oracle đã gỡ logo Java khỏi bộ nên dùng logo OpenJDK với màu cam của Java.
 const glyphs: Record<Exclude<TechIconName, Custom>, Glyph> = {
   typescript: siTypescript,
   javascript: siJavascript,
@@ -74,7 +74,7 @@ const custom: Record<Custom, { brand: string; body: React.ReactNode }> = {
   },
   // Chuỗi bước có vòng lặp: agent tự lập kế hoạch và lặp lại
   agentic: {
-    brand: "var(--accent)",
+    brand: "#F97316",
     body: (
       <>
         <rect x="2.5" y="9" width="5" height="5" rx="1.2" />
@@ -88,7 +88,7 @@ const custom: Record<Custom, { brand: string; body: React.ReactNode }> = {
   },
   // Một nút điều phối nối tới nhiều mô hình
   orchestration: {
-    brand: "var(--signal)",
+    brand: "#8B5CF6",
     body: (
       <>
         <circle cx="12" cy="12" r="3" />

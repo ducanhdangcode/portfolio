@@ -8,23 +8,42 @@ import { asset } from "@/lib/asset";
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   const href = `/projects/${project.slug}`;
 
+  // Ảnh web đặt trong mockup laptop vẽ bằng CSS, ảnh mobile dùng khung điện thoại
   const cover = project.screens ? (
     <PhoneScreens screens={project.screens} size="card" decorative />
   ) : (
-    <span className="media-frame">
-      <Image src={asset(project.cover)} alt="" width={1600} height={1000} />
+    <span className="laptop">
+      <span className="laptop-screen">
+        <Image src={asset(project.cover)} alt="" width={1600} height={1000} />
+      </span>
+      <span className="laptop-base" />
     </span>
   );
 
   return (
-    <article className={`card project-card${projectLinks ? "" : " is-static"}`}>
+    <article className={`project-card${projectLinks ? "" : " is-static"}`}>
       <div className="project-body">
-        <p className="project-kicker mono">
-          <span>{String(index + 1).padStart(2, "0")}</span>
-          <span>{project.year}</span>
-          <span>{project.role}</span>
-        </p>
-        <h3>{projectLinks ? <Link href={href}>{project.title}</Link> : project.title}</h3>
+        <div className="project-head">
+          <span className="project-num" aria-hidden="true">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <div>
+            <h3>{projectLinks ? <Link href={href}>{project.title}</Link> : project.title}</h3>
+            <p className="project-kicker mono">
+              <span>{project.year}</span>
+              <span>{project.role}</span>
+            </p>
+          </div>
+        </div>
+
+        <ul className="tags tags-pill" aria-label="Tech stack">
+          {project.stack.map((t) => (
+            <li key={t} className="tag">
+              {t}
+            </li>
+          ))}
+        </ul>
+
         <p className="project-tagline">{project.tagline}</p>
 
         <dl className="project-ps">
@@ -37,14 +56,6 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
             <dd>{project.solution}</dd>
           </div>
         </dl>
-
-        <ul className="tags" aria-label="Tech stack">
-          {project.stack.map((t) => (
-            <li key={t} className="tag">
-              {t}
-            </li>
-          ))}
-        </ul>
 
         {(projectLinks || project.links.code) && (
           <div className="project-links">

@@ -91,14 +91,19 @@ export default async function CaseStudy({ params }: Props) {
             <PhoneScreens screens={project.screens} size="large" />
           </div>
         ) : (
-          <div className="case-cover media-frame enter" style={delay(8)}>
-            <Image
-              src={asset(project.cover)}
-              alt={project.coverAlt}
-              width={1600}
-              height={1000}
-              priority
-            />
+          <div className="case-cover enter" style={delay(8)}>
+            <span className="laptop">
+              <span className="laptop-screen">
+                <Image
+                  src={asset(project.cover)}
+                  alt={project.coverAlt}
+                  width={1600}
+                  height={1000}
+                  priority
+                />
+              </span>
+              <span className="laptop-base" />
+            </span>
           </div>
         )}
 

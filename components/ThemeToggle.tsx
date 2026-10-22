@@ -3,10 +3,10 @@
 import { Moon, Sun } from "./icons";
 
 export function ThemeToggle() {
-  // Mặc định là giao diện sáng; tối chỉ bật khi người dùng chọn
+  // Mặc định là giao diện tối (nền đen); sáng chỉ bật khi người dùng chọn
   const toggle = () => {
     const root = document.documentElement;
-    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    const next = root.dataset.theme === "light" ? "dark" : "light";
     root.dataset.theme = next;
     try {
       localStorage.setItem("theme", next);
