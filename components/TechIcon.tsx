@@ -88,7 +88,7 @@ const custom: Record<Custom, { brand: string; body: React.ReactNode }> = {
   },
   // Một nút điều phối nối tới nhiều mô hình
   orchestration: {
-    brand: "var(--gold)",
+    brand: "var(--signal)",
     body: (
       <>
         <circle cx="12" cy="12" r="3" />

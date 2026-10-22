@@ -1,10 +1,10 @@
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Geist, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 // Cả ba font đều có subset tiếng Việt
-export const serif = Playfair_Display({
+export const display = Space_Grotesk({
   subsets: ["latin", "vietnamese"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -14,7 +14,7 @@ export const sans = Geist({
   display: "swap",
 });
 
-export const mono = Geist_Mono({
+export const mono = JetBrains_Mono({
   subsets: ["latin", "vietnamese"],
   variable: "--font-mono",
   display: "swap",

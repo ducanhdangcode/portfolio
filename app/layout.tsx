@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ScrollEffects } from "@/components/ScrollEffects";
 import { site } from "@/content/site";
-import { mono, sans, serif } from "@/lib/fonts";
+import { display, mono, sans } from "@/lib/fonts";
 import "./globals.css";
 
 const title = `${site.name} — ${site.role}`;
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F7F4EE",
+  themeColor: "#F3F3F1",
 };
 
 // Chạy trước khi paint: áp theme đã lưu (không nháy) và bật class js cho hiệu ứng cuộn
@@ -24,7 +24,7 @@ const bootScript = `document.documentElement.classList.add("js");try{var t=local
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${serif.variable} ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="vi" className={`${display.variable} ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>

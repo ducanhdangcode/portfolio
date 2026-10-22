@@ -14,6 +14,7 @@ export default function Home() {
     <>
       {/* ───────── 1 · Ảnh + thông tin cá nhân ───────── */}
       <section id="about" className="intro" aria-labelledby="intro-title">
+        <div className="hero-grid-bg" aria-hidden="true" />
         <div className="container">
           <div className="intro-inner">
             <div
