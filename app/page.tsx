@@ -5,6 +5,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { TechIcon } from "@/components/TechIcon";
 import { projects } from "@/content/projects";
 import { site } from "@/content/site";
+import { asset } from "@/lib/asset";
 
 const delay = (i: number) => ({ "--d": i }) as React.CSSProperties;
 
@@ -22,12 +23,10 @@ export default function Home() {
               <div className="photo-frame" aria-hidden="true" />
               <div className="hero-photo">
                 <Image
-                  src={site.photo}
+                  src={asset(site.photo)}
                   alt={site.photoAlt}
                   width={site.photoSize.width}
                   height={site.photoSize.height}
-                  quality={90}
-                  sizes="(min-width: 1024px) 620px, 100vw"
                   priority
                 />
               </div>
@@ -69,7 +68,7 @@ export default function Home() {
 
               <div className="intro-contact enter" style={delay(5)}>
                 <div className="intro-actions">
-                  <a href={site.cv} className="btn btn-primary btn-lg" download>
+                  <a href={asset(site.cv)} className="btn btn-primary btn-lg" download>
                     <Download size={16} />
                     Tải CV (PDF)
                   </a>

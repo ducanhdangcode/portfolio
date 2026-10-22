@@ -41,8 +41,8 @@ export const site = {
   availableText: "Đang tìm cơ hội mới",
 
   // ── Phần 1: ảnh + thông tin cá nhân ──
-  photo: "/profile-2.png", // trong public/; khung ảnh tự lấy tỉ lệ theo photoSize
-  photoSize: { width: 2048, height: 1358 },
+  photo: "/profile-2.webp", // trong public/ (nén từ profile-2.png bằng `npm run images`); khung lấy tỉ lệ theo photoSize
+  photoSize: { width: 1400, height: 928 },
   photoAlt: "Ảnh chân dung của Nguyễn Đức Anh",
   intro:
     "Software Engineer chuyên sâu về kiến trúc backend hiệu năng cao và xây dựng các hệ thống web/AI-driven quy mô lớn — từ mô hình dữ liệu phức tạp đến tích hợp Agentic & LLM workflows.",

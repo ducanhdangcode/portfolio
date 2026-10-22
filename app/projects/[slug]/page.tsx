@@ -6,6 +6,7 @@ import { ArchitectureFlow } from "@/components/ArchitectureFlow";
 import { PhoneScreens } from "@/components/PhoneScreens";
 import { ArrowLeft, ArrowRight, ArrowUpRight, GitHub } from "@/components/icons";
 import { getProject, projects } from "@/content/projects";
+import { asset } from "@/lib/asset";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -92,11 +93,10 @@ export default async function CaseStudy({ params }: Props) {
         ) : (
           <div className="case-cover media-frame enter" style={delay(8)}>
             <Image
-              src={project.cover}
+              src={asset(project.cover)}
               alt={project.coverAlt}
               width={1600}
               height={1000}
-              unoptimized
               priority
             />
           </div>

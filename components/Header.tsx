@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/content/site";
+import { asset } from "@/lib/asset";
 import { Download } from "./icons";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -22,7 +23,7 @@ export function Header() {
         </nav>
         <div className="header-actions">
           <ThemeToggle />
-          <a href={site.cv} className="btn btn-sm btn-secondary" download>
+          <a href={asset(site.cv)} className="btn btn-sm btn-secondary" download>
             <Download size={14} />
             Resume
           </a>

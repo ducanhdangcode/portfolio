@@ -3,6 +3,7 @@ import Link from "next/link";
 import { projectLinks, type Project } from "@/content/projects";
 import { ArrowRight, ArrowUpRight, GitHub } from "./icons";
 import { PhoneScreens } from "./PhoneScreens";
+import { asset } from "@/lib/asset";
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   const href = `/projects/${project.slug}`;
@@ -11,8 +12,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
     <PhoneScreens screens={project.screens} size="card" decorative />
   ) : (
     <span className="media-frame">
-      {/* Ảnh gốc, không nén lại: ảnh chụp màn hình nhiều chữ nhỏ dễ bị nhòe khi nén */}
-      <Image src={project.cover} alt="" width={1600} height={1000} unoptimized />
+      <Image src={asset(project.cover)} alt="" width={1600} height={1000} />
     </span>
   );
 

@@ -35,7 +35,7 @@ export const projects: Project[] = [
     timeline: "4 tháng",
     team: "3 người",
     stack: ["Next.js", ".NET 8", "PostgreSQL", "Redis", "Docker"],
-    cover: "/repolensx.png",
+    cover: "/repolensx.webp",
     coverAlt: "Màn hình Tổng quan của RepoLensX: repositories, code graph, MCP calls và ingestion pipeline",
     links: { code: "https://github.com/ducanhdangcode/RepoLensX" },
     problem:
@@ -63,15 +63,15 @@ export const projects: Project[] = [
     timeline: "6 tuần",
     team: "Solo",
     stack: ["React Native", ".NET", "MySQL", "AWS"],
-    cover: "/lumilearn1.png",
+    cover: "/lumilearn1.webp",
     coverAlt: "Màn hình Course Details của LumiLearn",
     screens: [
       {
-        src: "/lumilearn1.png",
+        src: "/lumilearn1.webp",
         alt: "LumiLearn: màn hình Course Details của khoá Computer Science Fundamentals, danh sách bài học và flashcard",
       },
       {
-        src: "/lumilearn2.png",
+        src: "/lumilearn2.webp",
         alt: "LumiLearn: màn hình câu hỏi trắc nghiệm về cấu trúc dữ liệu, câu 4/5",
       },
     ],
