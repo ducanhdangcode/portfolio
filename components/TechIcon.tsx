@@ -106,6 +106,11 @@ const custom: Record<Custom, { brand: string; body: React.ReactNode }> = {
 const DARK = new Set(["000000", "0A0A0A", "191919"]);
 const brandColor = (hex: string) => (DARK.has(hex.toUpperCase()) ? "var(--text)" : `#${hex}`);
 
+// Màu thương hiệu dạng CSS, để khối bao ngoài (pill) tô nền theo đúng màu logo
+export function techBrand(name: TechIconName) {
+  return name in custom ? custom[name as Custom].brand : brandColor(glyphs[name as Exclude<TechIconName, Custom>].hex);
+}
+
 export function TechIcon({ name, size = 22 }: { name: TechIconName; size?: number }) {
   if (name in custom) {
     const c = custom[name as Custom];

@@ -4,7 +4,8 @@ import { Download, factIcons, socialIcons } from "@/components/icons";
 import { ProjectCard } from "@/components/ProjectCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SplitChars } from "@/components/SplitChars";
-import { TechIcon } from "@/components/TechIcon";
+import { TechIcon, techBrand } from "@/components/TechIcon";
+import { TechTags } from "@/components/TechTags";
 import { projects } from "@/content/projects";
 import { site } from "@/content/site";
 import { asset } from "@/lib/asset";
@@ -18,6 +19,7 @@ const stats = [
   { label: "Dự án cá nhân", value: projects.length },
   { label: "Công nghệ sử dụng", value: site.tech.reduce((n, g) => n + g.items.length, 0) },
 ];
+const isCurrent = (period: string) => /nay|present/i.test(period);
 
 export default function Home() {
   return (
@@ -179,28 +181,54 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="tech" data-reveal>
-            <p className="tech-title">
-              Ngôn ngữ & framework sử dụng
-              <span className="tech-dots" aria-hidden="true" />
-            </p>
-            <div className="tech-groups" data-stagger>
-              {site.tech.map((g, i) => (
-                <div key={g.group} className="tech-group">
-                  <div className="tech-group-head">
-                    <span className="tech-group-num">{String(i + 1).padStart(2, "0")}</span>
-                    <h3>{g.group}</h3>
+          {/* Cùng kiểu bảng terminal với thông tin cá nhân: mỗi dòng một nhóm, logo hiện lần lượt theo --i, --j */}
+          <div className="tech" data-reveal data-scroll>
+            <span className="tech-ghost" aria-hidden="true">
+              Stack
+            </span>
+            <h2 className="tech-title">
+              <SplitChars text="Ngôn ngữ & framework sử dụng" />
+              <span className="tech-dots" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+            </h2>
+            <div className="board tech-board" data-spotlight>
+              <p className="board-cmd mono" aria-hidden="true">
+                <span className="board-cmd-path">~/stack</span> ${" "}
+                <span data-scramble="ls --group --all">ls --group --all</span>
+              </p>
+              <span className="board-prompt mono" aria-hidden="true">
+                &gt;<span className="caret">_</span>
+              </span>
+              <div className="tech-groups" data-stagger>
+                {site.tech.map((g, i) => (
+                  <div key={g.group} className="tech-group">
+                    <div className="tech-group-head">
+                      <span className="tech-group-num" aria-hidden="true">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <h3>{g.group}</h3>
+                      <span className="tech-group-count mono" aria-hidden="true">
+                        [{String(g.items.length).padStart(2, "0")}]
+                      </span>
+                    </div>
+                    <ul className="tech-items">
+                      {g.items.map((t, j) => (
+                        <li key={t.name} style={{ "--brand": techBrand(t.icon), "--j": j } as React.CSSProperties}>
+                          <TechIcon name={t.icon} size={22} />
+                          {t.name}
+                          {/* Bản logo cỡ lớn hiện mờ sau cả dòng khi di chuột vào pill */}
+                          <span className="tech-ghost-logo">
+                            <TechIcon name={t.icon} size={200} />
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="tech-items">
-                    {g.items.map((t) => (
-                      <li key={t.name}>
-                        <TechIcon name={t.icon} size={26} />
-                        {t.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -210,46 +238,68 @@ export default function Home() {
       <section id="experience" className="section" aria-labelledby="experience-title">
         <span className="deco-circle deco-circle-left" aria-hidden="true" />
         <div className="container">
-          {/* Bảng viền bo góc: tiêu đề nằm trong bảng, mỗi dòng là một vị trí */}
-          <div className="board exp-board" data-reveal>
-            <span className="board-prompt mono" aria-hidden="true">
-              &gt;_
+          {/* data-scroll: --sp để chữ "02" khổng lồ phía sau bảng trôi chậm khi cuộn */}
+          <div className="exp" data-scroll>
+            <span className="exp-ghost" aria-hidden="true">
+              02
             </span>
-            <SectionHeader
-              id="experience-title"
-              index="02"
-              eyebrow="Experience"
-              title="Kinh nghiệm làm việc"
-            />
-            <ol className="exp-list">
-              {site.experience.map((job) => (
-                <li key={job.company + job.period} className="exp-row">
-                  <div className="exp-when">
-                    <p className="exp-period">{job.period}</p>
-                    <p className="exp-sub">{job.type}</p>
-                  </div>
-                  <div className="exp-where">
-                    <p className="exp-company">{job.company}</p>
-                    <p className="exp-sub">{job.location}</p>
-                  </div>
-                  <article className="exp-what">
-                    <h3>{job.role}</h3>
-                    <ul className="exp-bullets">
-                      {job.bullets.map((b) => (
-                        <li key={b}>{b}</li>
-                      ))}
-                    </ul>
-                    <ul className="tags" aria-label="Tech stack">
-                      {job.stack.map((t) => (
-                        <li key={t} className="tag">
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
-                </li>
-              ))}
-            </ol>
+            {/* Bảng viền bo góc: tiêu đề nằm trong bảng, mỗi dòng là một vị trí */}
+            <div className="board exp-board" data-reveal data-spotlight>
+              <p className="board-cmd mono" aria-hidden="true">
+                <span className="board-cmd-path">~/career</span> ${" "}
+                <span data-scramble="git log --graph">git log --graph</span>
+              </p>
+              <span className="board-prompt mono" aria-hidden="true">
+                &gt;<span className="caret">_</span>
+              </span>
+              <SectionHeader
+                id="experience-title"
+                index="02"
+                eyebrow="Experience"
+                title="Kinh nghiệm làm việc"
+              />
+              {/* data-progress: đường timeline tô dần khi cuộn, mốc của dòng đã qua sáng lên (is-passed) */}
+              <ol className="exp-list" data-progress>
+                {site.experience.map((job) => {
+                  const current = isCurrent(job.period);
+                  return (
+                    <li key={job.company + job.period} className="exp-row" data-reveal>
+                      <span className={`exp-node${current ? " exp-node-live" : ""}`} aria-hidden="true" />
+                      <div className="exp-when">
+                        <p className="exp-period">
+                          <span className="sr-only">{job.period}</span>
+                          <span aria-hidden="true" data-scramble={job.period}>
+                            {job.period}
+                          </span>
+                        </p>
+                        <p className="exp-sub">{job.type}</p>
+                        {current && (
+                          <p className="exp-live mono">
+                            <i aria-hidden="true" />
+                            Đang làm
+                          </p>
+                        )}
+                      </div>
+                      <div className="exp-where">
+                        <p className="exp-company">{job.company}</p>
+                        <p className="exp-sub">{job.location}</p>
+                      </div>
+                      <article className="exp-what">
+                        <h3>
+                          <span className="exp-role">{job.role}</span>
+                        </h3>
+                        <ul className="exp-bullets" data-stagger>
+                          {job.bullets.map((b) => (
+                            <li key={b}>{b}</li>
+                          ))}
+                        </ul>
+                        <TechTags items={job.stack} />
+                      </article>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           </div>
         </div>
       </section>
@@ -258,17 +308,25 @@ export default function Home() {
       <section id="projects" className="section section-alt" aria-labelledby="projects-title">
         <span className="deco-circle deco-circle-right" aria-hidden="true" />
         <div className="container">
-          <SectionHeader
-            id="projects-title"
-            index="03"
-            eyebrow="Projects"
-            title="Dự án cá nhân"
-            lead="Vấn đề kỹ thuật gặp phải, cách giải quyết và con số đo được."
-            variant="code"
-          />
+          {/* data-scroll: --sp để chữ "03" khổng lồ phía sau tiêu đề trôi chậm khi cuộn */}
+          <div className="projects-head" data-scroll>
+            <span className="projects-ghost" aria-hidden="true">
+              03
+            </span>
+            <SectionHeader
+              id="projects-title"
+              index="03"
+              eyebrow="Projects"
+              title="Dự án cá nhân"
+              lead="Vấn đề kỹ thuật gặp phải, cách giải quyết và con số đo được."
+              variant="code"
+              cmd={{ path: "~/projects", run: "ls --sort=impact" }}
+            />
+          </div>
           <div className="project-list">
+            {/* data-scroll: --sp cho ảnh trong thẻ trôi lệch nhịp (parallax) */}
             {projects.map((p, i) => (
-              <div key={p.slug} data-reveal>
+              <div key={p.slug} className="project-item" data-reveal data-scroll>
                 <ProjectCard project={p} index={i} />
               </div>
             ))}

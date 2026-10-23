@@ -41,13 +41,13 @@ export function ScrollEffects() {
 
     $("[data-reveal]:not(.is-in) [data-count]").forEach((el) => (el.textContent = pad(0)));
 
+    // Chỉ chạy cho phần tử thuộc đúng khối reveal này; khối reveal lồng bên trong tự chạy khi nó hiện
+    const own = (el: HTMLElement, sel: string) =>
+      [...el.querySelectorAll<HTMLElement>(sel)].filter((t) => t.parentElement?.closest("[data-reveal]") === el);
+
     const play = (el: HTMLElement) => {
-      el.querySelectorAll<HTMLElement>("[data-scramble]").forEach((t) =>
-        timers.push(window.setTimeout(() => scramble(t, isAlive), 350)),
-      );
-      el.querySelectorAll<HTMLElement>("[data-count]").forEach((t) =>
-        timers.push(window.setTimeout(() => countUp(t, isAlive), 700)),
-      );
+      own(el, "[data-scramble]").forEach((t) => timers.push(window.setTimeout(() => scramble(t, isAlive), 350)));
+      own(el, "[data-count]").forEach((t) => timers.push(window.setTimeout(() => countUp(t, isAlive), 700)));
     };
 
     const io = new IntersectionObserver(

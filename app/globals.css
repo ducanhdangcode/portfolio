@@ -445,6 +445,36 @@ a:hover .roll > span {
   font-weight: 700;
 }
 
+/* Tag có logo (TechTags): nền màu thương hiệu quét từ trái sang khi di chuột, như pill ở phần công nghệ */
+.tags-brand .tag {
+  --tint: color-mix(in srgb, var(--brand) 16%, transparent);
+  gap: 6px;
+  background: linear-gradient(var(--tint), var(--tint)) no-repeat 0 0 / 0% 100%;
+  transition:
+    background-size 500ms var(--ease),
+    border-color 300ms var(--ease);
+}
+
+.tags-pill.tags-brand .tag {
+  gap: 8px;
+  padding-left: 14px;
+}
+
+.tags-brand .tag:hover {
+  background-size: 100% 100%;
+  border-color: var(--brand);
+}
+
+.tags-brand svg {
+  flex: none;
+  color: var(--brand);
+  transition: transform 500ms var(--ease);
+}
+
+.tags-brand .tag:hover svg {
+  transform: rotate(-12deg) scale(1.2);
+}
+
 /* Tooltip tức thì */
 [data-tip]::after {
   content: attr(data-tip);
@@ -584,8 +614,9 @@ a:hover .roll > span {
   translate: 0 0;
 }
 
-/* Khối reveal "điều phối": bản thân đứng yên, các con .rv hiện lần lượt theo --d */
-.js .intro-inner[data-reveal] {
+/* Khối reveal "điều phối": bản thân đứng yên, các con hiện lần lượt (.rv theo --d, bảng tech theo --i) */
+.js .intro-inner[data-reveal],
+.js .tech[data-reveal] {
   opacity: 1;
   translate: none;
 }
@@ -1120,7 +1151,9 @@ a:hover .roll > span {
 }
 
 /* Vệt sáng đi theo con trỏ */
-.facts-board::after {
+.facts-board::after,
+.tech-board::after,
+.exp-board::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1134,7 +1167,41 @@ a:hover .roll > span {
   pointer-events: none;
 }
 
-.facts-board:hover::after {
+/* Viền sáng theo con trỏ: cùng gradient nhưng mask chỉ chừa một vành mỏng sát viền */
+.facts-board::before,
+.tech-board::before,
+.exp-board::before,
+.project-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 0%),
+    var(--accent-ink),
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  opacity: 0;
+  transition: opacity 400ms var(--ease);
+  pointer-events: none;
+}
+
+.facts-board:hover::after,
+.tech-board:hover::after,
+.exp-board:hover::after,
+.facts-board:hover::before,
+.tech-board:hover::before,
+.exp-board:hover::before,
+.project-stage:hover::before {
   opacity: 1;
 }
 
@@ -1164,7 +1231,10 @@ a:hover .roll > span {
 }
 
 .facts > div::before,
-.stat-row::before {
+.stat-row::before,
+.tech-group::before,
+.exp-row::before,
+.project-ps > div::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
@@ -1287,9 +1357,31 @@ a:hover .roll > span {
   color: var(--subtle);
 }
 
-/* Ngôn ngữ & framework: logo luôn hiện màu thương hiệu, không viền */
+/* Ngôn ngữ & framework: bảng terminal giống thông tin cá nhân, mỗi dòng một nhóm */
 .tech {
+  position: relative;
   margin-top: 112px;
+}
+
+/* Chữ viền khổng lồ phía sau ("Stack", "02", "03"), trôi chậm khi cuộn như số "01" ở trên.
+   Khối cha có data-scroll để có --sp. */
+.tech-ghost,
+.exp-ghost,
+.projects-ghost {
+  position: absolute;
+  z-index: -1;
+  top: -0.42em;
+  right: -0.04em;
+  font-family: var(--font-numeral), Georgia, serif;
+  font-size: clamp(120px, 19vw, 280px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--border-strong);
+  transform: translateY(calc((var(--sp, 0.5) - 0.5) * -200px));
+  pointer-events: none;
+  user-select: none;
 }
 
 @media (min-width: 768px) {
@@ -1306,46 +1398,130 @@ a:hover .roll > span {
   letter-spacing: -0.04em;
 }
 
-.tech-dots::before {
-  content: "•••";
-  margin-left: 0.4em;
-  letter-spacing: 0.05em;
+/* Ba chấm màu nhấn nháy lần lượt như đang gõ (chỉ đổi opacity nên rẻ) */
+.tech-dots {
+  display: inline-flex;
+  gap: 0.12em;
+  margin-left: 0.3em;
+  vertical-align: 0.1em;
+}
+
+.tech-dots i {
+  width: 0.2em;
+  height: 0.2em;
+  border-radius: 50%;
+  background: var(--accent-ink);
+  animation: dot-pulse 1.4s var(--ease) infinite;
+}
+
+.tech-dots i:nth-child(2) {
+  animation-delay: 160ms;
+}
+
+.tech-dots i:nth-child(3) {
+  animation-delay: 320ms;
+}
+
+@keyframes dot-pulse {
+  30% {
+    opacity: 0.2;
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+/* isolation: logo lớn (z-index -1) nằm trên nền bảng nhưng dưới chữ */
+.tech-board {
+  isolation: isolate;
+  padding-top: 64px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Dòng lệnh góc trái trên của bảng, "giải mã" khi cuộn tới (data-scramble) */
+.board-cmd {
+  position: absolute;
+  top: 26px;
+  left: 20px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--subtle);
   white-space: nowrap;
 }
 
-.tech-groups {
+@media (min-width: 640px) {
+  .board-cmd {
+    left: 28px;
+  }
+}
+
+.board-cmd-path {
+  color: var(--accent-ink);
+}
+
+.tech-group {
+  position: relative;
   display: grid;
-  gap: 40px;
+  gap: 18px;
+  padding: 22px 20px 24px;
 }
 
 @media (min-width: 640px) {
-  .tech-groups {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 48px 40px;
+  .tech-group {
+    padding-inline: 28px;
   }
 }
 
-@media (min-width: 1024px) {
-  .tech-groups {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 56px 48px;
+@media (min-width: 900px) {
+  .tech-group {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 9fr);
+    align-items: center;
+    gap: 40px;
+    padding-block: 26px;
   }
+}
+
+/* Vạch chanh bên trái dâng lên khi di chuột vào dòng */
+.tech-group::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 500ms var(--ease);
+}
+
+.tech-group:hover::after {
+  transform: scaleY(1);
 }
 
 .tech-group-head {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: var(--stroke) solid var(--line);
+  align-items: center;
+  gap: 16px;
 }
 
+/* Số nhóm viền rỗng, di chuột thì tô đặc màu nhấn */
 .tech-group-num {
+  flex: none;
   font-family: var(--font-numeral), Georgia, serif;
-  font-size: 28px;
+  font-size: 40px;
   font-weight: 900;
   line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--line);
+  transition:
+    color 400ms var(--ease),
+    -webkit-text-stroke-color 400ms var(--ease);
+}
+
+.tech-group:hover .tech-group-num {
+  color: var(--accent-ink);
+  -webkit-text-stroke-color: var(--accent-ink);
 }
 
 .tech-group-head h3 {
@@ -1353,45 +1529,137 @@ a:hover .roll > span {
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.02em;
+  transition: translate 500ms var(--ease);
+}
+
+.tech-group:hover h3 {
+  translate: 6px 0;
+}
+
+.tech-group-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--subtle);
 }
 
 .tech-items {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px 22px;
+  gap: 10px;
 }
 
+/* Pill logo: di chuột thì nền màu thương hiệu quét từ trái sang, logo xoay nhẹ */
 .tech-items li {
+  --tint: color-mix(in srgb, var(--brand) 16%, transparent);
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  height: 44px;
+  padding: 0 18px 0 12px;
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: 999px;
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
+  background: linear-gradient(var(--tint), var(--tint)) no-repeat 0 0 / 0% 100%;
+  transition:
+    background-size 500ms var(--ease),
+    border-color 300ms var(--ease),
+    opacity 400ms var(--ease);
+}
+
+.tech-items li:hover {
+  background-size: 100% 100%;
+  border-color: var(--brand);
 }
 
 .tech-items svg {
   flex: none;
   color: var(--brand);
-  transition: transform 300ms var(--ease);
 }
 
-.tech-items li:hover svg {
-  transform: translateY(-3px) rotate(-6deg);
-}
-
-.js .tech[data-reveal] .tech-groups > div {
-  opacity: 0;
-  translate: 0 16px;
+.tech-items li > svg {
   transition:
-    opacity 800ms var(--ease),
-    translate 800ms var(--ease);
-  transition-delay: calc(150ms + var(--i) * 80ms);
+    transform 500ms var(--ease),
+    filter 400ms var(--ease);
 }
 
-.js .tech[data-reveal].is-in .tech-groups > div {
-  opacity: 1;
-  translate: 0 0;
+.tech-items li:hover > svg {
+  transform: rotate(-12deg) scale(1.15);
+}
+
+/* Logo cỡ lớn: định vị theo cả dòng (li không position), xoay + phóng vào khi hover pill */
+.tech-ghost-logo {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: 3%;
+  display: grid;
+  opacity: 0;
+  transform: translateY(-50%) scale(0.55) rotate(-28deg);
+  transition:
+    opacity 450ms var(--ease),
+    transform 800ms var(--ease);
+  pointer-events: none;
+}
+
+.tech-items li:hover .tech-ghost-logo {
+  opacity: 0.16;
+  transform: translateY(-50%) scale(1) rotate(-8deg);
+}
+
+/* Focus: di chuột vào một dòng thì các dòng khác mờ đi; vào một pill thì pill cùng dòng chuyển xám */
+@media (hover: hover) {
+  /* Mờ head và từng pill, không mờ cả ul: opacity < 1 trên ul sẽ kéo logo lớn lên trên chữ */
+  .tech-group-head {
+    transition: opacity 400ms var(--ease);
+  }
+
+  .tech-groups:has(.tech-group:hover) .tech-group:not(:hover) :is(.tech-group-head, li) {
+    opacity: 0.3;
+  }
+
+  .tech-items:has(li:hover) li:not(:hover) {
+    opacity: 0.45;
+  }
+
+  .tech-items:has(li:hover) li:not(:hover) > svg {
+    filter: grayscale(1);
+  }
+}
+
+/* Hiện: bảng nổi lên, đường kẻ từng dòng tự vẽ, rồi từng pill bật ra theo --i (dòng) và --j (vị trí) */
+.js .tech:not(.is-in) .tech-board,
+.js .tech:not(.is-in) .tech-group,
+.js .tech:not(.is-in) .tech-items li {
+  opacity: 0;
+}
+
+.js .tech.is-in .tech-board {
+  animation: enter 900ms 200ms var(--ease) both;
+}
+
+/* backwards (không phải both): xong animation thì trả opacity về style thường để hiệu ứng focus còn chạy */
+.js .tech.is-in .tech-group {
+  animation: rise-in 800ms var(--ease) backwards;
+  animation-delay: calc(450ms + var(--i) * 110ms);
+}
+
+.js .tech.is-in .tech-group::before {
+  animation: line-in 900ms var(--ease) both;
+  animation-delay: calc(350ms + var(--i) * 110ms);
+}
+
+.js .tech.is-in .tech-items li {
+  animation: chip-in 700ms var(--ease) backwards;
+  animation-delay: calc(650ms + var(--i) * 110ms + var(--j) * 45ms);
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    scale: 0.7;
+  }
 }
 
 /* ═════════════════════════ Sections ═════════════════════════ */
@@ -1438,6 +1706,14 @@ a:hover .roll > span {
   content: "./>";
 }
 
+/* Dòng lệnh terminal phía trên nhãn tiêu đề (SectionHeader cmd) */
+.section-cmd {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--subtle);
+  white-space: nowrap;
+}
+
 .section-lead {
   max-width: 60ch;
   color: var(--muted);
@@ -1447,9 +1723,24 @@ a:hover .roll > span {
 
 /* ═════════════════════════ 2 · Kinh nghiệm ═════════════════════════ */
 
+/* Khung bọc giữ chữ "02" khổng lồ phía sau bảng, trôi chậm khi cuộn (--sp do ScrollEffects đặt) */
+.exp {
+  position: relative;
+}
+
+.exp-ghost {
+  top: -0.5em;
+  font-size: clamp(160px, 24vw, 360px);
+}
+
 .exp-board {
-  padding-top: 40px;
+  padding-top: 72px;
   overflow: hidden;
+  background: var(--bg);
+}
+
+.exp-board .board-cmd {
+  left: 24px;
 }
 
 .exp-board .section-header {
@@ -1459,7 +1750,11 @@ a:hover .roll > span {
 
 @media (min-width: 768px) {
   .exp-board {
-    padding-top: 48px;
+    padding-top: 80px;
+  }
+
+  .exp-board .board-cmd {
+    left: 40px;
   }
 
   .exp-board .section-header {
@@ -1467,18 +1762,101 @@ a:hover .roll > span {
   }
 }
 
+/* Đường timeline: một vạch, phần trên tô màu nhấn tới --progress (do data-progress đặt).
+   Không có JS hoặc giảm chuyển động thì --progress không có, vạch tô hết. */
+.exp-list {
+  --rail: 24px;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .exp-list {
+    --rail: 40px;
+  }
+}
+
+.exp-list::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 var(--rail);
+  width: var(--stroke);
+  background: linear-gradient(
+    var(--accent-ink) calc(var(--progress, 1) * 100%),
+    var(--border-strong) 0
+  );
+}
+
+/* Dòng: nền quét từ mép phải đường timeline sang khi di chuột */
 .exp-row {
+  --pt: 28px;
+  position: relative;
   display: grid;
   gap: 12px;
-  padding: 28px 24px;
-  border-top: var(--stroke) solid var(--line);
+  padding: var(--pt) 24px var(--pt) calc(var(--rail) + 32px);
+  background: linear-gradient(var(--surface), var(--surface)) no-repeat calc(var(--rail) + 16px) 0 / 0% 100%;
+  transition: background-size 700ms var(--ease);
+}
+
+.js .exp-row[data-reveal] {
+  transition:
+    opacity 900ms var(--ease),
+    translate 900ms var(--ease),
+    background-size 700ms var(--ease);
+}
+
+.exp-row:hover {
+  background-size: calc(100% - var(--rail) - 16px) 100%;
 }
 
 @media (min-width: 900px) {
   .exp-row {
-    grid-template-columns: 180px 220px minmax(0, 1fr);
+    --pt: 36px;
+    grid-template-columns: 170px 210px minmax(0, 1fr);
     gap: 32px;
-    padding: 36px 40px;
+    padding-right: 40px;
+    padding-left: calc(var(--rail) + 44px);
+  }
+}
+
+/* Mốc trên timeline: sáng lên khi dòng đã cuộn qua, phình to khi di chuột */
+.exp-node {
+  position: absolute;
+  top: calc(var(--pt) + 5px);
+  left: calc(var(--rail) + var(--stroke) / 2 - 8px);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: var(--stroke) solid var(--line);
+  background: var(--bg);
+  transition:
+    background-color 400ms var(--ease),
+    border-color 400ms var(--ease),
+    scale 500ms var(--ease);
+}
+
+.exp-row.is-passed .exp-node {
+  background: var(--accent);
+  border-color: var(--accent-ink);
+}
+
+.exp-row:hover .exp-node {
+  scale: 1.4;
+}
+
+/* Vị trí hiện tại: vòng sóng lan ra liên tục (chỉ scale + opacity) */
+.exp-node-live::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--stroke) * -1);
+  border-radius: 50%;
+  border: var(--stroke) solid var(--accent-ink);
+  animation: ping 2s var(--ease) infinite;
+}
+
+@keyframes ping {
+  to {
+    scale: 2.8;
+    opacity: 0;
   }
 }
 
@@ -1486,6 +1864,7 @@ a:hover .roll > span {
   font-size: 18px;
   font-weight: 700;
   line-height: 1.3;
+  font-variant-numeric: tabular-nums;
 }
 
 .exp-sub {
@@ -1493,11 +1872,43 @@ a:hover .roll > span {
   color: var(--muted);
 }
 
+.exp-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  margin-top: 12px;
+  padding-inline: 10px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.exp-live i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dot-pulse 1.4s var(--ease) infinite;
+}
+
 .exp-company {
   font-size: 22px;
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: -0.03em;
+  transition:
+    color 400ms var(--ease),
+    translate 500ms var(--ease);
+}
+
+.exp-row:hover .exp-company {
+  color: var(--accent-ink);
+  translate: 6px 0;
 }
 
 .exp-what h3 {
@@ -1505,6 +1916,17 @@ a:hover .roll > span {
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.02em;
+}
+
+/* Gạch chân màu nhấn tự vẽ dưới tên vị trí khi di chuột */
+.exp-role {
+  padding-bottom: 2px;
+  background: linear-gradient(var(--accent-ink), var(--accent-ink)) no-repeat 0 100% / 0% 2px;
+  transition: background-size 600ms var(--ease);
+}
+
+.exp-row:hover .exp-role {
+  background-size: 100% 2px;
 }
 
 .exp-bullets {
@@ -1517,21 +1939,77 @@ a:hover .roll > span {
 
 .exp-bullets li {
   position: relative;
-  padding-left: 20px;
+  padding-left: 24px;
 }
 
+/* Gạch đầu dòng màu nhấn, dài ra lần lượt khi di chuột vào dòng */
 .exp-bullets li::before {
   content: "";
   position: absolute;
-  left: 2px;
-  top: 0.72em;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  left: 0;
+  top: 0.78em;
+  width: 10px;
+  height: 2px;
   background: var(--accent-ink);
+  transform-origin: left;
+  transition: transform 500ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+.exp-row:hover .exp-bullets li::before {
+  transform: scaleX(1.6);
+}
+
+/* Hiện từng dòng khi cuộn tới: kẻ dòng tự vẽ, cột trái trượt vào, bullet rồi tag hiện lần lượt.
+   backwards: xong animation trả opacity về style thường để hiệu ứng focus còn chạy */
+.js .exp-row.is-in::before {
+  animation: line-in 1000ms var(--ease) both;
+}
+
+.js .exp-row.is-in :is(.exp-when, .exp-where) {
+  animation: rise-in 800ms var(--ease) backwards;
+  animation-delay: 150ms;
+}
+
+.js .exp-row.is-in .exp-where {
+  animation-delay: 250ms;
+}
+
+.js .exp-row.is-in .exp-bullets li {
+  animation: rise-in 800ms var(--ease) backwards;
+  animation-delay: calc(350ms + var(--i) * 90ms);
+}
+
+.js .exp-row.is-in .tags-brand .tag {
+  animation: chip-in 600ms var(--ease) backwards;
+  animation-delay: calc(550ms + var(--i) * 45ms);
+}
+
+.js .exp-row.is-in .exp-node {
+  animation: chip-in 700ms 200ms var(--ease) backwards;
+}
+
+/* Focus: di chuột vào một dòng thì các dòng khác mờ đi */
+@media (hover: hover) {
+  .exp-row > :not(.exp-node) {
+    transition: opacity 400ms var(--ease);
+  }
+
+  .exp-list:has(.exp-row:hover) .exp-row:not(:hover) > :not(.exp-node) {
+    opacity: 0.35;
+  }
 }
 
 /* ═════════════════════════ 3 · Dự án cá nhân ═════════════════════════ */
+
+.projects-head {
+  position: relative;
+}
+
+.projects-ghost {
+  top: -0.3em;
+  font-size: clamp(160px, 24vw, 360px);
+}
 
 .project-list {
   display: grid;
@@ -1574,12 +2052,23 @@ a:hover .roll > span {
   gap: 20px;
 }
 
+/* Số thứ tự viền rỗng, di chuột vào thẻ thì tô đặc màu nhấn (như số nhóm ở phần công nghệ) */
 .project-num {
   font-family: var(--font-numeral), Georgia, serif;
   font-size: clamp(64px, 8vw, 112px);
   font-weight: 900;
   line-height: 0.8;
   letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--line);
+  transition:
+    color 500ms var(--ease),
+    -webkit-text-stroke-color 500ms var(--ease);
+}
+
+.project-card:hover .project-num {
+  color: var(--accent-ink);
+  -webkit-text-stroke-color: var(--accent-ink);
 }
 
 .project-card h3 {
@@ -1610,7 +2099,7 @@ a:hover .roll > span {
   color: var(--muted);
 }
 
-.project-kicker span + span::before {
+.project-kicker [data-scramble] + [data-scramble]::before {
   content: "/";
   margin-right: 10px;
 }
@@ -1622,24 +2111,53 @@ a:hover .roll > span {
   text-wrap: pretty;
 }
 
+/* Problem / Solution: các dòng kẻ tự vẽ như bảng thông tin, nhãn mono bên trái */
 .project-ps {
   display: grid;
-  gap: 16px;
   font-size: 15px;
   line-height: 1.7;
   color: var(--muted);
 }
 
+.project-ps > div {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding-block: 16px;
+}
+
+@media (min-width: 640px) {
+  .project-ps > div {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
 .project-ps dt {
-  margin-bottom: 2px;
-  font-size: 14px;
-  font-style: italic;
-  font-weight: 800;
+  padding-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text);
+  transition: color 400ms var(--ease);
 }
 
 .project-ps dt::before {
-  content: "— ";
+  content: "> ";
+  color: var(--accent-ink);
+}
+
+.project-ps > div:hover dt {
+  color: var(--accent-ink);
+}
+
+.project-ps dd {
+  transition: color 400ms var(--ease);
+}
+
+.project-ps > div:hover dd {
+  color: var(--text);
 }
 
 .project-links {
@@ -1655,6 +2173,46 @@ a:hover .roll > span {
   min-width: 0;
 }
 
+/* Sân khấu: khung bo góc nền lưới chấm, quầng sáng theo con trỏ (--mx/--my) nằm sau thiết bị,
+   viền sáng dùng chung với các bảng; nghiêng 3D theo con trỏ (data-tilt đặt transform) */
+.project-stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: clamp(32px, 6vw, 64px) clamp(16px, 4vw, 40px);
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: var(--radius);
+  background: radial-gradient(var(--border-strong) 1px, transparent 1.5px) 0 0 / 22px 22px;
+  transition:
+    transform 600ms var(--ease),
+    border-color 400ms var(--ease);
+}
+
+.project-stage:hover {
+  border-color: var(--line);
+}
+
+.project-stage::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    60% 55% at var(--mx, 50%) var(--my, 50%),
+    var(--accent-soft),
+    transparent 70%
+  );
+  transition: opacity 400ms var(--ease);
+}
+
+/* Parallax: thiết bị trôi lệch nhịp với chữ khi cuộn (--sp từ .project-item) */
+.project-stage > * {
+  transform: translateY(calc((var(--sp, 0.5) - 0.5) * -70px));
+}
+
 /* Mockup laptop vẽ bằng CSS: màn hình viền đen + thân máy bạc */
 .laptop {
   display: block;
@@ -1662,17 +2220,41 @@ a:hover .roll > span {
   max-width: 640px;
   margin-inline: auto;
   padding-inline: 6%;
+  perspective: 1400px;
   transition: translate 600ms var(--ease);
 }
 
 .laptop-screen {
+  position: relative;
   display: block;
+  overflow: hidden;
   aspect-ratio: 16 / 10.4;
   padding: 2.4% 2.4% 3.2%;
   border: 1px solid #3c3c3c;
   border-radius: 18px 18px 4px 4px;
   background: #0b0b0b;
   box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.6);
+  transform-origin: 50% 100%;
+}
+
+/* Vệt sáng lướt chéo qua màn hình: một lần khi máy mở, và mỗi lần di chuột vào */
+.laptop-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.16) 48%,
+    transparent 60%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+
+.project-stage:hover .laptop-screen::after {
+  transform: translateX(110%);
+  transition: transform 1100ms var(--ease);
 }
 
 .laptop-screen img {
@@ -1705,8 +2287,8 @@ a:hover .roll > span {
   background: #8a8a8a;
 }
 
-.project-card:not(.is-static):hover .laptop {
-  translate: 0 -6px;
+.project-stage:hover .laptop {
+  translate: 0 -8px;
 }
 
 /* Ảnh màn hình điện thoại: khung máy bo tròn, hai máy lệch nhẹ */
@@ -1740,6 +2322,12 @@ a:hover .roll > span {
   width: min(42%, 210px);
 }
 
+.phones-card .phone {
+  transition:
+    translate 700ms var(--ease),
+    rotate 700ms var(--ease);
+}
+
 .phones-card .phone:nth-child(1) {
   translate: 0 -16px;
   rotate: -4deg;
@@ -1750,9 +2338,134 @@ a:hover .roll > span {
   rotate: 4deg;
 }
 
+/* Hai máy trôi ngược chiều nhau khi cuộn (đè lên parallax chung của .project-stage > *) */
+.project-stage > .phones-card {
+  transform: none;
+}
+
+.phones-card .phone:nth-child(1) {
+  transform: translateY(calc((var(--sp, 0.5) - 0.5) * -90px));
+}
+
+.phones-card .phone:nth-child(2) {
+  transform: translateY(calc((var(--sp, 0.5) - 0.5) * 50px));
+}
+
+/* Di chuột: hai máy xoè ra */
+.project-stage:hover .phones-card .phone:nth-child(1) {
+  translate: -14px -30px;
+  rotate: -9deg;
+}
+
+.project-stage:hover .phones-card .phone:nth-child(2) {
+  translate: 14px 42px;
+  rotate: 9deg;
+}
+
 /* Chừa chỗ cho phần lệch xuống của máy thứ hai */
-.project-media:has(.phones) {
-  padding-block: 24px 48px;
+.project-stage:has(.phones) {
+  padding-block: 40px 72px;
+}
+
+/* Hiện thẻ khi cuộn tới: số trồi lên, tên hiện từng chữ (split-char dùng chung), tag bật ra,
+   các dòng Problem/Solution tự kẻ; laptop "mở nắp" rồi màn hình bật sáng, điện thoại trượt lên.
+   backwards: xong animation trả về style thường để hover/parallax còn chạy */
+.js .project-item.is-in .project-num {
+  animation: num-in 1000ms var(--ease) backwards;
+}
+
+@keyframes num-in {
+  from {
+    opacity: 0;
+    translate: 0 40%;
+  }
+}
+
+.js .project-item.is-in .tags-brand .tag {
+  animation: chip-in 600ms var(--ease) backwards;
+  animation-delay: calc(400ms + var(--i) * 50ms);
+}
+
+.js .project-item.is-in :is(.project-tagline, .project-ps > div, .project-links) {
+  animation: rise-in 800ms var(--ease) backwards;
+}
+
+.js .project-item.is-in .project-tagline {
+  animation-delay: 500ms;
+}
+
+.js .project-item.is-in .project-ps > div {
+  animation-delay: 620ms;
+}
+
+.js .project-item.is-in .project-ps > div + div {
+  animation-delay: 740ms;
+}
+
+.js .project-item.is-in .project-ps > div::before {
+  animation: line-in 900ms 560ms var(--ease) both;
+}
+
+.js .project-item.is-in .project-ps > div + div::before {
+  animation-delay: 680ms;
+}
+
+.js .project-item.is-in .project-links {
+  animation-delay: 860ms;
+}
+
+.js .project-item.is-in .project-stage {
+  animation: enter 900ms 150ms var(--ease) backwards;
+}
+
+.js .project-item.is-in .laptop-screen {
+  animation: lid-open 1300ms 350ms var(--ease) backwards;
+}
+
+@keyframes lid-open {
+  from {
+    transform: rotateX(-92deg);
+  }
+}
+
+.js .project-item.is-in .laptop-screen img {
+  animation: screen-on 700ms 1150ms ease-out backwards;
+}
+
+@keyframes screen-on {
+  from {
+    opacity: 0;
+  }
+}
+
+.js .project-item.is-in .laptop-screen::after {
+  animation: sheen 1200ms 1500ms var(--ease) backwards;
+}
+
+@keyframes sheen {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(110%);
+  }
+}
+
+.js .project-item.is-in .phones-card .phone {
+  animation: phone-in 1100ms var(--ease) backwards;
+  animation-delay: 300ms;
+}
+
+.js .project-item.is-in .phones-card .phone:nth-child(2) {
+  animation-delay: 450ms;
+}
+
+@keyframes phone-in {
+  from {
+    opacity: 0;
+    translate: 0 120px;
+    rotate: 0deg;
+  }
 }
 
 .case-phones {
@@ -2162,9 +2875,14 @@ a:hover .roll > span {
   }
 
   .js [data-reveal],
-  .js [data-reveal] .rv,
-  .js .tech[data-reveal] .tech-groups > div {
+  .js [data-reveal] .rv {
     opacity: 1;
     translate: none;
+  }
+
+  /* Không có hiệu ứng cuộn nên không có is-passed: cho mọi mốc timeline sáng sẵn */
+  .exp-node {
+    background: var(--accent);
+    border-color: var(--accent-ink);
   }
 }
