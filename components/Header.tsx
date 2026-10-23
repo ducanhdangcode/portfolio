@@ -17,7 +17,9 @@ export function Header() {
         <nav className="site-nav" aria-label="Chính">
           {nav.map((item) => (
             <Link key={item.href} href={item.href}>
-              {item.label}
+              <span className="roll">
+                <span>{item.label}</span>
+              </span>
             </Link>
           ))}
         </nav>
@@ -25,7 +27,9 @@ export function Header() {
           <ThemeToggle />
           <a href={asset(site.cv)} className="btn btn-sm btn-secondary" download>
             <Download size={14} />
-            Resume
+            <span className="roll">
+              <span>Resume</span>
+            </span>
           </a>
         </div>
       </div>

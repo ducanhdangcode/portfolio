@@ -1,3 +1,5 @@
+import { SplitChars } from "./SplitChars";
+
 type Props = {
   id: string;
   index: string;
@@ -16,7 +18,9 @@ export function SectionHeader({ id, index, eyebrow, title, lead, variant }: Prop
         {eyebrow}
         <span className="eyebrow-rule" aria-hidden="true" />
       </p>
-      <h2 id={id}>{title}</h2>
+      <h2 id={id}>
+        <SplitChars text={title} />
+      </h2>
       {lead && <p className="section-lead">{lead}</p>}
     </header>
   );

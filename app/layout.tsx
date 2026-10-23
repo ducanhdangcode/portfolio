@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Cursor } from "@/components/Cursor";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ScrollEffects } from "@/components/ScrollEffects";
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#0b0b0a",
 };
 
 // Chạy trước khi paint: áp theme đã lưu (không nháy) và bật class js cho hiệu ứng cuộn
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main id="main">{children}</main>
         <Footer />
+        <Cursor />
       </body>
     </html>
   );
