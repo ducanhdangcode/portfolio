@@ -44,6 +44,12 @@ export const ArrowLeft = (p: Props) => (
   </Stroke>
 );
 
+export const ArrowDown = (p: Props) => (
+  <Stroke {...p}>
+    <path d="M12 5v14M6 13l6 6 6-6" />
+  </Stroke>
+);
+
 export const ArrowUpRight = (p: Props) => (
   <Stroke {...p}>
     <path d="M7 17 17 7M8 7h9v9" />

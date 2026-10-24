@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { Fragment } from "react";
-import { Download, factIcons, socialIcons } from "@/components/icons";
+import { ArrowDown, ArrowUpRight, Download, factIcons, socialIcons } from "@/components/icons";
 import { ProjectCard } from "@/components/ProjectCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SplitChars } from "@/components/SplitChars";
@@ -10,9 +9,9 @@ import { projects } from "@/content/projects";
 import { site } from "@/content/site";
 import { asset } from "@/lib/asset";
 
-const delay = (i: number) => ({ "--d": i }) as React.CSSProperties;
+const pad = (n: number) => String(n).padStart(2, "0");
+const vars = (v: Record<string, string | number>) => v as React.CSSProperties;
 
-const roleLine = `${site.role} · ${site.location}`;
 const introWords = site.intro.split(" ");
 const stats = [
   { label: "Vị trí đã đảm nhận", value: site.experience.length },
@@ -21,212 +20,283 @@ const stats = [
 ];
 const isCurrent = (period: string) => /nay|present/i.test(period);
 
+// Các tầng của chồng stack: nhóm đầu tiên (ngôn ngữ) là tầng đáy; danh sách đọc từ trên xuống nên đảo ngược
+const layers = site.tech.map((g, i) => ({ g, i })).reverse();
+
+// "Hash" 7 ký tự cố định cho mỗi commit (FNV-1a), chỉ để trang trí kiểu git log
+function shortHash(text: string) {
+  let h = 0x811c9dc5;
+  for (const ch of text) h = Math.imul(h ^ ch.codePointAt(0)!, 0x01000193);
+  return (h >>> 0).toString(16).padStart(8, "0").slice(0, 7);
+}
+
+// Chữ ở màn chuyển cảnh: tách quanh chữ O đầu tiên (lòng chữ O là "cửa" để camera đi xuyên qua)
+const interlude = (() => {
+  const i = Math.max(0, site.interlude.search(/o/i));
+  return { before: site.interlude.slice(0, i), o: site.interlude[i], after: site.interlude.slice(i + 1) };
+})();
+
+function Socials() {
+  return (
+    <ul className="socials" aria-label="Mạng xã hội">
+      {site.socials.map((s) => {
+        const Icon = socialIcons[s.icon];
+        return (
+          <li key={s.href}>
+            <a
+              href={s.href}
+              className="icon-btn"
+              aria-label={s.label}
+              data-tip={s.label}
+              data-magnetic
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Icon size={17} />
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function Home() {
   return (
     <>
-      {/* ───────── 1 · Ảnh + thông tin cá nhân ───────── */}
-      <section id="about" className="intro" aria-labelledby="intro-title">
-        <span className="deco-circle deco-circle-hero" aria-hidden="true" />
-        <div className="container">
-          {/* Chữ "Port / Folio." khổng lồ đè lên ảnh, chỉ để trang trí */}
-          {/* data-scroll-y: --sy = số px đã cuộn, để chữ tách ra và ảnh trôi khi cuộn */}
-          <div className="hero" data-scroll-y>
-            <p className="hero-word hero-word-top enter" style={delay(0)} aria-hidden="true">
-              <span className="hero-pill" />
-              <SplitChars text="Port" />
-              <span className="hero-underline" />
+      {/* ───────── Màn đầu: tên khổng lồ + quả cầu đồ thị 3D ───────── */}
+      {/* data-scroll: cuộn xuống thì nội dung màn đầu trôi lên nhanh hơn và mờ dần (--sp) */}
+      <section id="top" className="hero" aria-labelledby="hero-title" data-scroll>
+        {/* Neo của quả cầu đồ thị (ParticleField); không có WebGL thì hiện thành vòng tròn mảnh */}
+        <span className="orb orb-hero" data-orb aria-hidden="true" />
+        <div className="container hero-inner">
+          <p className="hero-status mono">
+            {site.available && <i className="pulse" aria-hidden="true" />}
+            {site.availableText} · {site.location}
+          </p>
+
+          {/* Mỗi dòng trồi lên từ sau mặt nạ; chạy bằng CSS ngay khi tải, không chờ JS.
+              data-proximity: chữ gần con trỏ vươn cao và chuyển cam (chỉ scale + màu, không đổi layout) */}
+          <h1 id="hero-title" className="hero-name" data-proximity>
+            <span className="sr-only">{site.name}</span>
+            {site.heroName.map((line, i) => (
+              <span key={line} className="hero-line" aria-hidden="true" style={vars({ "--l": i })}>
+                <span>
+                  {line.split(" ").map((word, wi) => (
+                    <Fragment key={wi}>
+                      {wi > 0 && " "}
+                      <span className="split-word">
+                        {Array.from(word).map((ch, ci) => (
+                          <span key={ci} className="px-char">
+                            {ch}
+                          </span>
+                        ))}
+                      </span>
+                    </Fragment>
+                  ))}
+                  {i === site.heroName.length - 1 && <em className="px-char">.</em>}
+                </span>
+              </span>
+            ))}
+          </h1>
+
+          <div className="hero-sub">
+            <p className="hero-role">
+              <strong>{site.role}</strong>
+              {site.tagline}
             </p>
-            <span className="hero-glow" aria-hidden="true" />
-            <div
-              className="hero-photo enter"
-              style={{ ...delay(1), aspectRatio: `${site.photoSize.width} / ${site.photoSize.height}` }}
-              data-cursor="lg"
-            >
-              <Image
+            <div className="hero-cta">
+              <a href="#projects" className="btn btn-primary btn-lg" data-magnetic>
+                Xem dự án
+                <ArrowDown size={16} />
+              </a>
+              <a href={asset(site.cv)} className="btn btn-secondary btn-lg" download data-magnetic>
+                <Download size={16} />
+                Tải CV
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Chân màn đầu: các mảng chuyên môn + gợi ý cuộn */}
+        <div className="container hero-foot">
+          <ul className="hero-focus mono">
+            {site.focus.map((f, i) => (
+              <li key={f} style={vars({ "--d": i })}>
+                <span>{pad(i + 1)}</span>
+                {f}
+              </li>
+            ))}
+          </ul>
+          <span className="hero-scroll mono" aria-hidden="true">
+            Cuộn
+            <i />
+          </span>
+        </div>
+      </section>
+
+      {/* ───────── 01 · Giới thiệu ───────── */}
+      <section id="about" className="section about" aria-labelledby="about-title">
+        <div className="container about-grid">
+          {/* Ảnh dính lại khi cuộn (desktop), nghiêng 3D theo con trỏ */}
+          <figure className="about-photo" data-reveal>
+            <div className="about-photo-frame" data-tilt>
+              <img
                 src={asset(site.photo)}
+                srcSet={`${asset(site.photoSmall)} 800w, ${asset(site.photo)} ${site.photoSize.width}w`}
+                sizes="(min-width: 1024px) 40vw, 100vw"
                 alt={site.photoAlt}
                 width={site.photoSize.width}
                 height={site.photoSize.height}
-                priority
+                loading="lazy"
+                decoding="async"
               />
+              <span className="about-photo-glare" aria-hidden="true" />
             </div>
-            <p className="hero-word hero-word-bottom enter" style={delay(2)} aria-hidden="true">
-              <SplitChars text="Folio." />
-            </p>
-            <p className="hero-role mono enter" style={delay(3)}>
-              {site.role}
-            </p>
-          </div>
+            <figcaption className="mono">
+              <span>{site.photoCaption}</span>
+              <span>{site.role}</span>
+            </figcaption>
+          </figure>
 
-        </div>
+          <div className="about-body">
+            <SectionHeader id="about-title" index="01" eyebrow="Giới thiệu" title={`Xin chào, mình là ${site.heroName.at(-1)}`} />
 
-        {/* Hai dải chữ bắt chéo, chạy ngược chiều nhau */}
-        <div className="marquee" aria-hidden="true">
-          {(["outline", "solid"] as const).map((kind) => (
-            <div key={kind} className={`marquee-band marquee-band-${kind}`}>
-              <div className="marquee-track">
-                {[0, 1, 2, 3].map((copy) => (
-                  <span key={copy} className="marquee-group">
-                    {site.marquee.map((word) => (
-                      <span key={word}>
-                        {word}
-                        <i>✦</i>
-                      </span>
-                    ))}
+            {/* Từng từ sáng dần theo vị trí cuộn (--scrub do ScrollEffects đặt; không có JS thì sáng hết) */}
+            <p className="about-statement" style={vars({ "--n": introWords.length })} data-scrub>
+              {introWords.map((w, i) => (
+                <Fragment key={i}>
+                  {i > 0 && " "}
+                  <span className="scrub-word" style={vars({ "--w": i })}>
+                    {w}
                   </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                </Fragment>
+              ))}
+            </p>
 
-        <div className="container">
-          {/* Các con có class rv hiện lần lượt theo --d khi khối cuộn tới */}
-          <div className="intro-inner" data-reveal data-scroll>
-            <span className="intro-ghost" aria-hidden="true">
-              01
-            </span>
-            <div className="intro-info">
-              <p className="eyebrow rv" style={delay(0)}>
-                <span className="eyebrow-num">01</span>
-                Giới thiệu
-                <span className="eyebrow-rule" aria-hidden="true" />
-              </p>
-              <h1 id="intro-title">
-                <span className="intro-hello rv" style={delay(1)}>
-                  Xin chào, mình là
-                </span>
-                <span className="intro-name" data-cursor="lg">
-                  <SplitChars text={`${site.name}.`} />
-                </span>
-              </h1>
-              <p className="intro-role mono rv" style={delay(3)}>
-                <span className="sr-only">{roleLine}</span>
-                <span aria-hidden="true" data-scramble={roleLine}>
-                  {roleLine}
-                </span>
-              </p>
-              <p className="intro-text rv" style={{ ...delay(4), "--n": introWords.length } as React.CSSProperties} data-scrub>
-                {introWords.map((w, i) => (
-                  <Fragment key={i}>
-                    {i > 0 && " "}
-                    <span className="scrub-word" style={{ "--w": i } as React.CSSProperties}>
-                      {w}
-                    </span>
-                  </Fragment>
-                ))}
-              </p>
-
-              <div className="intro-contact rv" style={delay(5)}>
-                <div className="intro-actions">
-                  <a href={asset(site.cv)} className="btn btn-primary btn-lg" download data-magnetic>
-                    <Download size={16} />
-                    <span className="roll">
-                      <span>Tải CV (PDF)</span>
-                    </span>
-                  </a>
-                  <ul className="socials" aria-label="Mạng xã hội">
-                    {site.socials.map((s) => {
-                      const Icon = socialIcons[s.icon];
-                      return (
-                        <li key={s.href}>
-                          <a
-                            href={s.href}
-                            className="icon-btn icon-btn-bordered"
-                            aria-label={s.label}
-                            data-tip={s.label}
-                            data-magnetic
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            <Icon size={17} />
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="board facts-board rv" style={delay(2)} data-spotlight data-tilt>
-              <span className="board-prompt mono" aria-hidden="true">
-                &gt;<span className="caret">_</span>
-              </span>
+            <div className="about-details" data-reveal>
               <dl className="facts" data-stagger>
                 {site.facts.map((f) => {
                   const Icon = factIcons[f.icon];
                   return (
                     <div key={f.label}>
                       <dt>
-                        <span className="fact-icon" aria-hidden="true">
-                          <Icon size={18} />
-                        </span>
-                        <span className="fact-label">{f.label}</span>
+                        <Icon size={16} />
+                        {f.label}
                       </dt>
                       <dd>{f.value}</dd>
                     </div>
                   );
                 })}
               </dl>
+
               {/* Số liệu tính từ nội dung thật, đếm tăng dần khi hiện */}
-              <dl className="stat-row" data-stagger>
+              <dl className="about-stats" data-stagger>
                 {stats.map((s) => (
                   <div key={s.label}>
-                    <dt>{s.label}</dt>
-                    <dd data-count={s.value}>{String(s.value).padStart(2, "0")}</dd>
+                    <dt className="mono">{s.label}</dt>
+                    <dd data-count={s.value}>{pad(s.value)}</dd>
                   </div>
                 ))}
               </dl>
+
+              <div className="about-actions">
+                <a href={asset(site.cv)} className="btn btn-primary btn-lg" download data-magnetic>
+                  <Download size={16} />
+                  Tải CV (PDF)
+                </a>
+                <Socials />
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Cùng kiểu bảng terminal với thông tin cá nhân: mỗi dòng một nhóm, logo hiện lần lượt theo --i, --j */}
-          <div className="tech" data-reveal data-scroll>
-            <span className="tech-ghost" aria-hidden="true">
-              Stack
+      {/* Dải chữ chạy giữa hai section: tốc độ và chiều chạy theo vận tốc cuộn, nghiêng theo quán tính (data-marquee) */}
+      <div className="band" aria-hidden="true" data-marquee>
+        <div className="band-track">
+          {[0, 1].map((copy) => (
+            <span key={copy} className="band-group">
+              {[...site.focus, ...site.focus].map((w, i) => (
+                <span key={i}>
+                  {w}
+                  <i>✦</i>
+                </span>
+              ))}
             </span>
-            <h2 className="tech-title">
-              <SplitChars text="Ngôn ngữ & framework sử dụng" />
-              <span className="tech-dots" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-              </span>
-            </h2>
-            <div className="board tech-board" data-spotlight>
-              <p className="board-cmd mono" aria-hidden="true">
-                <span className="board-cmd-path">~/stack</span> ${" "}
-                <span data-scramble="ls --group --all">ls --group --all</span>
-              </p>
-              <span className="board-prompt mono" aria-hidden="true">
-                &gt;<span className="caret">_</span>
-              </span>
-              <div className="tech-groups" data-stagger>
-                {site.tech.map((g, i) => (
-                  <div key={g.group} className="tech-group">
-                    <div className="tech-group-head">
-                      <span className="tech-group-num" aria-hidden="true">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <h3>{g.group}</h3>
-                      <span className="tech-group-count mono" aria-hidden="true">
-                        [{String(g.items.length).padStart(2, "0")}]
-                      </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ───────── 02 · Stack: chồng tầng kiến trúc 3D ───────── */}
+      {/* data-stack3d: section được ghim, cuộn để tách các tầng ra (exploded view) rồi lần lượt "mở" từng tầng.
+          Tầng đang mở: logo dựng đứng lên, dòng tương ứng bên trái bung danh sách công nghệ.
+          Danh sách bên trái là nội dung thật (đọc được bằng trình đọc màn hình); sân khấu 3D chỉ để trang trí. */}
+      <section id="stack" className="stk" aria-labelledby="stack-title" data-stack3d>
+        <div className="stk-sticky">
+          <div className="container stk-grid">
+            <div className="stk-info">
+              <SectionHeader
+                id="stack-title"
+                index="02"
+                eyebrow="Stack"
+                title="Công cụ & nền tảng"
+                lead="Mỗi tầng của hệ thống là một lớp. Cuộn để bóc từng lớp, từ ngôn ngữ nền tảng lên tới AI."
+              />
+              {/* Tầng trên cùng của chồng (AI) đứng đầu danh sách, như đọc một sơ đồ kiến trúc từ trên xuống */}
+              <ol className="stk-list">
+                {layers.map(({ g, i }) => (
+                  <li key={g.group} className="stk-row" data-layer={i}>
+                    <p className="stk-row-head">
+                      <span className="mono">{pad(i + 1)}</span>
+                      <span className="stk-row-name">{g.group}</span>
+                      <span className="mono stk-row-count">[{pad(g.items.length)}]</span>
+                    </p>
+                    {/* Thu/bung bằng grid-template-rows 0fr → 1fr; nội dung vẫn nằm trong DOM khi thu */}
+                    <div className="stk-row-body">
+                      <ul className="stk-row-items">
+                        {g.items.map((t, j) => (
+                          <li key={t.name} style={vars({ "--brand": techBrand(t.icon), "--j": j })}>
+                            <TechIcon name={t.icon} size={16} />
+                            {t.name}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="tech-items">
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="stk-stage" aria-hidden="true">
+              <p className="stk-hud mono">
+                <span>
+                  Layer <b data-stack3d-count>00</b> / {pad(site.tech.length)}
+                </span>
+                <span>stack.exploded()</span>
+              </p>
+              <div className="stk-scene">
+                {site.tech.map((g, i) => (
+                  <div
+                    key={g.group}
+                    className="stk-plate"
+                    style={vars({ "--i": i, "--brand": techBrand(g.items[0].icon) })}
+                  >
+                    <span className="stk-plate-label mono">
+                      {pad(i + 1)} — {g.group}
+                    </span>
+                    <span className="stk-tiles">
                       {g.items.map((t, j) => (
-                        <li key={t.name} style={{ "--brand": techBrand(t.icon), "--j": j } as React.CSSProperties}>
-                          <TechIcon name={t.icon} size={22} />
-                          {t.name}
-                          {/* Bản logo cỡ lớn hiện mờ sau cả dòng khi di chuột vào pill */}
-                          <span className="tech-ghost-logo">
-                            <TechIcon name={t.icon} size={200} />
-                          </span>
-                        </li>
+                        <span key={t.name} className="stk-tile" style={vars({ "--brand": techBrand(t.icon), "--j": j })}>
+                          <TechIcon name={t.icon} size={26} />
+                        </span>
                       ))}
-                    </ul>
+                    </span>
                   </div>
+                ))}
+                {/* Gói dữ liệu chạy dọc xuyên qua các tầng */}
+                {[0, 1, 2].map((b) => (
+                  <span key={b} className="stk-beam" style={vars({ "--b": b })} />
                 ))}
               </div>
             </div>
@@ -234,102 +304,173 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───────── 2 · Kinh nghiệm ───────── */}
-      <section id="experience" className="section" aria-labelledby="experience-title">
-        <span className="deco-circle deco-circle-left" aria-hidden="true" />
-        <div className="container">
-          {/* data-scroll: --sp để chữ "02" khổng lồ phía sau bảng trôi chậm khi cuộn */}
-          <div className="exp" data-scroll>
-            <span className="exp-ghost" aria-hidden="true">
-              02
+      {/* ───────── 03 · Kinh nghiệm: git graph ───────── */}
+      {/* Desktop đủ rộng/cao: section được ghim, cuộn dọc đẩy dải trượt ngang (data-hscroll, --hp).
+          Mobile: đường main chạy dọc. Phần đường đã đi qua tô cam tới giữa màn hình (--fill), nhánh đã tới thì
+          sáng lên và các commit bật ra lần lượt (is-passed). */}
+      <section id="experience" className="xp" aria-labelledby="experience-title" data-hscroll>
+        <div className="xp-sticky">
+          <div className="xp-viewport">
+            <ol className="xp-track">
+              <li className="xp-intro">
+                <SectionHeader
+                  id="experience-title"
+                  index="03"
+                  eyebrow="Kinh nghiệm"
+                  title="Hành trình làm việc"
+                  lead="Mỗi vị trí là một nhánh, mỗi việc đã làm là một commit. Bấm vào commit để xem chi tiết."
+                />
+                <p className="xp-cmd mono" aria-hidden="true">
+                  <span>~/career</span> $ git log --graph --oneline
+                </p>
+              </li>
+              {site.experience.map((job, i) => {
+                const current = isCurrent(job.period);
+                return (
+                  <li key={job.company + job.period} className={`xp-job${current ? " is-current" : ""}`}>
+                    {/* Nút trên đường main; nhánh của vị trí chạy dọc xuống qua các commit */}
+                    <span className="xp-node" aria-hidden="true" />
+                    <span className="xp-year" aria-hidden="true">
+                      {job.period.match(/\d{4}/)?.[0]}
+                    </span>
+                    <p className="xp-when mono">
+                      {job.period}
+                      {current && <span className="xp-head">HEAD → main</span>}
+                    </p>
+                    <h3 className="xp-role">{job.role}</h3>
+                    <p className="xp-company">
+                      {job.company}
+                      <span className="mono">
+                        {job.type} · {job.location}
+                      </span>
+                    </p>
+                    {/* Commit: một dòng ngắn, bấm để mở chi tiết. Cùng name → mở commit này thì commit khác của
+                        cùng vị trí tự đóng (accordion gốc của trình duyệt, không cần JS) */}
+                    <ol className="xp-commits">
+                      {job.commits.map((c, j) => (
+                        <li key={c.title} style={vars({ "--j": j })}>
+                          <details className="commit" name={`job-${i}`}>
+                            <summary>
+                              <code className="commit-hash">{shortHash(job.company + c.title)}</code>
+                              <span className="commit-msg">
+                                <b>feat({c.scope}):</b> {c.title}
+                              </span>
+                              <span className="commit-toggle" aria-hidden="true" />
+                            </summary>
+                            <p className="commit-detail">{c.detail}</p>
+                          </details>
+                        </li>
+                      ))}
+                    </ol>
+                    <TechTags items={job.stack} />
+                  </li>
+                );
+              })}
+              {/* Cuối đường main: nhánh mới chờ được tạo */}
+              <li className="xp-next">
+                <span className="xp-node" aria-hidden="true" />
+                <p className="xp-cmd mono">
+                  $ git checkout -b <span>next-chapter</span>
+                </p>
+                <p className="xp-next-title">
+                  Chương tiếp theo<em>?</em>
+                </p>
+                <a href="#contact" className="btn btn-primary btn-lg" data-magnetic>
+                  Cùng làm việc
+                  <ArrowUpRight size={16} />
+                </a>
+              </li>
+            </ol>
+          </div>
+          {/* Thanh tiến trình + bộ đếm vị trí (chỉ hiện ở chế độ ngang) */}
+          <div className="container xp-progress" aria-hidden="true">
+            <span className="mono" data-hscroll-count>
+              01
             </span>
-            {/* Bảng viền bo góc: tiêu đề nằm trong bảng, mỗi dòng là một vị trí */}
-            <div className="board exp-board" data-reveal data-spotlight>
-              <p className="board-cmd mono" aria-hidden="true">
-                <span className="board-cmd-path">~/career</span> ${" "}
-                <span data-scramble="git log --graph">git log --graph</span>
-              </p>
-              <span className="board-prompt mono" aria-hidden="true">
-                &gt;<span className="caret">_</span>
-              </span>
-              <SectionHeader
-                id="experience-title"
-                index="02"
-                eyebrow="Experience"
-                title="Kinh nghiệm làm việc"
-              />
-              {/* data-progress: đường timeline tô dần khi cuộn, mốc của dòng đã qua sáng lên (is-passed) */}
-              <ol className="exp-list" data-progress>
-                {site.experience.map((job) => {
-                  const current = isCurrent(job.period);
-                  return (
-                    <li key={job.company + job.period} className="exp-row" data-reveal>
-                      <span className={`exp-node${current ? " exp-node-live" : ""}`} aria-hidden="true" />
-                      <div className="exp-when">
-                        <p className="exp-period">
-                          <span className="sr-only">{job.period}</span>
-                          <span aria-hidden="true" data-scramble={job.period}>
-                            {job.period}
-                          </span>
-                        </p>
-                        <p className="exp-sub">{job.type}</p>
-                        {current && (
-                          <p className="exp-live mono">
-                            <i aria-hidden="true" />
-                            Đang làm
-                          </p>
-                        )}
-                      </div>
-                      <div className="exp-where">
-                        <p className="exp-company">{job.company}</p>
-                        <p className="exp-sub">{job.location}</p>
-                      </div>
-                      <article className="exp-what">
-                        <h3>
-                          <span className="exp-role">{job.role}</span>
-                        </h3>
-                        <ul className="exp-bullets" data-stagger>
-                          {job.bullets.map((b) => (
-                            <li key={b}>{b}</li>
-                          ))}
-                        </ul>
-                        <TechTags items={job.stack} />
-                      </article>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
+            <span className="xp-bar">
+              <i />
+            </span>
+            <span className="mono">{pad(site.experience.length)}</span>
           </div>
         </div>
       </section>
 
-      {/* ───────── 3 · Dự án cá nhân ───────── */}
-      <section id="projects" className="section section-alt" aria-labelledby="projects-title">
-        <span className="deco-circle deco-circle-right" aria-hidden="true" />
+      {/* ───────── Chuyển cảnh: chữ phóng to dần, camera đi xuyên qua lòng chữ O vào phần dự án ───────── */}
+      {/* data-zoom: section cao ~2.5 màn hình, phần dính lại phóng to theo tiến độ cuộn (--zp, scale) */}
+      <section className="zoom" aria-hidden="true" data-zoom>
+        <div className="zoom-sticky">
+          <p className="zoom-cap mono">(04) — Cuộn để đi vào</p>
+          <p className="zoom-text">
+            {interlude.before}
+            <span className="zoom-o">{interlude.o}</span>
+            {interlude.after}
+          </p>
+        </div>
+      </section>
+
+      {/* ───────── 04 · Dự án: chồng thẻ sticky ───────── */}
+      <section id="projects" className="section" aria-labelledby="projects-title">
         <div className="container">
-          {/* data-scroll: --sp để chữ "03" khổng lồ phía sau tiêu đề trôi chậm khi cuộn */}
-          <div className="projects-head" data-scroll>
-            <span className="projects-ghost" aria-hidden="true">
-              03
-            </span>
-            <SectionHeader
-              id="projects-title"
-              index="03"
-              eyebrow="Projects"
-              title="Dự án cá nhân"
-              lead="Vấn đề kỹ thuật gặp phải, cách giải quyết và con số đo được."
-              variant="code"
-              cmd={{ path: "~/projects", run: "ls --sort=impact" }}
-            />
-          </div>
-          <div className="project-list">
-            {/* data-scroll: --sp cho ảnh trong thẻ trôi lệch nhịp (parallax) */}
+          <SectionHeader
+            id="projects-title"
+            index="04"
+            eyebrow="Dự án"
+            title="Dự án cá nhân"
+            lead="Vấn đề kỹ thuật gặp phải, cách giải quyết và con số đo được."
+          />
+          {/* data-stack: thẻ sau trượt lên đè thẻ trước; thẻ bị đè thu nhỏ, tối dần (--cover) */}
+          <div className="pj-stack" data-stack>
             {projects.map((p, i) => (
-              <div key={p.slug} className="project-item" data-reveal data-scroll>
-                <ProjectCard project={p} index={i} />
-              </div>
+              <ProjectCard key={p.slug} project={p} index={i} total={projects.length} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 05 · Liên hệ ───────── */}
+      <section id="contact" className="section contact" aria-labelledby="contact-title">
+        <div className="container">
+          {/* data-scroll: --sp để hai dòng chữ khổng lồ trượt ngược chiều nhau khi cuộn tới */}
+          <div className="contact-inner" data-reveal data-scroll>
+            <p className="sh-index mono">
+              <span>(05)</span>
+              Liên hệ
+            </p>
+            <h2 id="contact-title" className="contact-title" data-proximity>
+              {site.contact.title.map((line) => (
+                <span key={line} className="contact-line">
+                  <SplitChars text={line} />
+                </span>
+              ))}
+            </h2>
+
+            {/* Nút tròn lớn; quả cầu hạt 3D tụ quanh nó (neo data-orb), chữ chạy vòng ngoài */}
+            <a href={`mailto:${site.email}`} className="contact-cta" data-magnetic data-cursor="lg">
+              <span className="orb orb-contact" data-orb aria-hidden="true" />
+              <svg className="contact-ring" viewBox="0 0 200 200" aria-hidden="true">
+                <path id="contact-ring-path" d="M100 100m-86 0a86 86 0 1 1 172 0a86 86 0 1 1-172 0" fill="none" />
+                <text>
+                  <textPath href="#contact-ring-path" textLength="538" lengthAdjust="spacing">
+                    {site.contact.ring.repeat(2)}
+                  </textPath>
+                </text>
+              </svg>
+              <span className="contact-cta-core">
+                <ArrowUpRight size={30} />
+                <span>Gửi email</span>
+              </span>
+            </a>
+
+            <div className="contact-foot">
+              <p className="contact-lead">{site.contact.lead}</p>
+              <div className="about-actions">
+                <a href={asset(site.cv)} className="btn btn-secondary btn-lg" download data-magnetic>
+                  <Download size={16} />
+                  Tải CV (PDF)
+                </a>
+                <Socials />
+              </div>
+            </div>
           </div>
         </div>
       </section>

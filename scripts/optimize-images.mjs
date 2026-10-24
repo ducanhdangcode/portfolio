@@ -10,6 +10,8 @@ import sharp from "sharp";
 const images = [
   // Ảnh đại diện: hiển thị tối đa ~620px
   { src: "profile-2.png", width: 1400, quality: 85 },
+  // Bản nhỏ cho điện thoại (srcset ở trang chủ)
+  { src: "profile-2.png", width: 800, quality: 82, suffix: "-800" },
   // Ảnh chụp màn hình điện thoại: hiển thị tối đa ~300px
   { src: "lumilearn1.png", width: 640, quality: 85 },
   { src: "lumilearn2.png", width: 640, quality: 85 },
@@ -20,9 +22,9 @@ const images = [
 const dir = "public";
 const kb = (n) => `${Math.round(n / 1024)}KB`;
 
-for (const { src, width, quality } of images) {
+for (const { src, width, quality, suffix = "" } of images) {
   const input = join(dir, src);
-  const output = join(dir, src.replace(/\.(png|jpe?g)$/i, ".webp"));
+  const output = join(dir, src.replace(/\.(png|jpe?g)$/i, `${suffix}.webp`));
   const info = await sharp(input)
     .resize({ width, withoutEnlargement: true })
     .webp({ quality, effort: 6 })

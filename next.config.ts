@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
     // Không có server để tối ưu ảnh lúc chạy; ảnh đã được nén sẵn bằng `npm run images`
     unoptimized: true,
   },
+  experimental: {
+    // CSS (~9KB gzip) nhúng thẳng vào <head>: bỏ một request chặn render. Portfolio chủ yếu đón khách lần đầu
+    // nên lợi FCP/LCP hơn là lợi cache stylesheet cho khách quay lại.
+    inlineCss: true,
+  },
   env: {
     // Dùng trong lib/asset.ts cho ảnh và file tĩnh (next/image và thẻ <a> không tự thêm basePath)
     NEXT_PUBLIC_BASE_PATH: basePath,

@@ -6,31 +6,21 @@ type Props = {
   eyebrow: string;
   title: string;
   lead?: string;
-  // "code": tiêu đề bọc kiểu thẻ code, ví dụ /Dự án cá nhân./>
-  variant?: "code";
-  // Dòng lệnh terminal phía trên nhãn, "giải mã" khi tiêu đề hiện: ~/projects $ ls
-  cmd?: { path: string; run: string };
 };
 
-export function SectionHeader({ id, index, eyebrow, title, lead, variant, cmd }: Props) {
+// Đầu section: "(02) — Stack" bên trái, tiêu đề hẹp khổng lồ lật lên từng chữ, đoạn dẫn ở cột phải
+export function SectionHeader({ id, index, eyebrow, title, lead }: Props) {
   return (
-    <header className={`section-header${variant ? ` section-header-${variant}` : ""}`} data-reveal>
-      {cmd && (
-        <p className="section-cmd mono" aria-hidden="true">
-          <span className="board-cmd-path">{cmd.path}</span> ${" "}
-          <span data-scramble={cmd.run}>{cmd.run}</span>
-          <span className="caret">_</span>
-        </p>
-      )}
-      <p className="eyebrow">
-        <span className="eyebrow-num">{index}</span>
+    <header className="sh" data-reveal>
+      <p className="sh-index mono">
+        <span>({index})</span>
         {eyebrow}
-        <span className="eyebrow-rule" aria-hidden="true" />
       </p>
-      <h2 id={id}>
+      <h2 id={id} className="sh-title">
         <SplitChars text={title} />
       </h2>
-      {lead && <p className="section-lead">{lead}</p>}
+      {lead && <p className="sh-lead">{lead}</p>}
+      <span className="sh-rule" aria-hidden="true" />
     </header>
   );
 }

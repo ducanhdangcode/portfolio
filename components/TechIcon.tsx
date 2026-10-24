@@ -111,38 +111,45 @@ export function techBrand(name: TechIconName) {
   return name in custom ? custom[name as Custom].brand : brandColor(glyphs[name as Exclude<TechIconName, Custom>].hex);
 }
 
-export function TechIcon({ name, size = 22 }: { name: TechIconName; size?: number }) {
-  if (name in custom) {
-    const c = custom[name as Custom];
-    return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        style={{ "--brand": c.brand } as React.CSSProperties}
-      >
-        {c.body}
-      </svg>
-    );
-  }
+const id = (name: TechIconName) => `ti-${name}`;
 
-  const glyph = glyphs[name as Exclude<TechIconName, Custom>];
+// Mỗi logo chỉ định nghĩa một lần trong sprite này (đặt ở layout); TechIcon tham chiếu bằng <use>.
+// Một logo xuất hiện ở nhiều nơi (bento, tag, nhãn quả cầu) nên path SVG dài không bị lặp lại trong HTML
+// và trong payload RSC — trang nhẹ đi đáng kể.
+export function TechSprite() {
+  return (
+    <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+      {(Object.keys(glyphs) as Exclude<TechIconName, Custom>[]).map((name) => (
+        <symbol key={name} id={id(name)} viewBox="0 0 24 24">
+          <path d={glyphs[name].path} />
+        </symbol>
+      ))}
+      {(Object.keys(custom) as Custom[]).map((name) => (
+        <symbol key={name} id={id(name)} viewBox="0 0 24 24">
+          {custom[name].body}
+        </symbol>
+      ))}
+    </svg>
+  );
+}
+
+// Logo thương hiệu tô đặc; icon tự vẽ là nét (thuộc tính nét đặt ở svg ngoài, nội dung <use> kế thừa)
+export function TechIcon({ name, size = 22 }: { name: TechIconName; size?: number }) {
+  const stroke = name in custom;
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill={stroke ? "none" : "currentColor"}
+      stroke={stroke ? "currentColor" : undefined}
+      strokeWidth={stroke ? 1.6 : undefined}
+      strokeLinecap={stroke ? "round" : undefined}
+      strokeLinejoin={stroke ? "round" : undefined}
       aria-hidden="true"
-      style={{ "--brand": brandColor(glyph.hex) } as React.CSSProperties}
+      style={{ "--brand": techBrand(name) } as React.CSSProperties}
     >
-      <path d={glyph.path} />
+      <use href={`#${id(name)}`} />
     </svg>
   );
 }
